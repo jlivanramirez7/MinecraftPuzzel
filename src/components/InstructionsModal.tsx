@@ -37,30 +37,30 @@ export const InstructionsModal: React.FC<InstructionsModalProps> = ({
             <span className="text-mc-gold font-bold">1. 🔊 LISTEN TO THE RIDDLE</span>
             <p className="mt-1 text-[11px] sm:text-xs">
               Press the <span className="text-white font-bold">LISTEN TO RIDDLE</span> button at the top!
-              Piggy Barnaby&apos;s audio riddle tells you which 5 Minecraft blocks go into the 3x3 Crafting Table.
+              The audio riddle tells you which 5 Minecraft blocks forge the Legendary Birthday Crown.
             </p>
           </div>
 
           <div className="bg-mc-dark p-3 rounded border-2 border-mc-stone">
             <span className="text-mc-gold font-bold">2. 🕹️ TAP TO PLACE BLOCKS</span>
             <p className="mt-1 text-[11px] sm:text-xs">
-              • <span className="text-white font-bold">SELECT</span>: Tap any block in your bottom Inventory Hotbar (highlights yellow).<br />
-              • <span className="text-white font-bold">PLACE</span>: Tap any empty slot on the 3x3 Crafting Table to put it there.<br />
-              • <span className="text-white font-bold">REMOVE</span>: Tap a slot on the table without selecting an item to remove it.
+              • <span className="text-white font-bold">SELECT</span>: Tap any block in your left Block Inventory (highlights yellow).<br />
+              • <span className="text-white font-bold">PLACE</span>: Tap any empty slot on the 3x3 Crafting Table to place it.<br />
+              • <span className="text-white font-bold">REMOVE</span>: Tap a slot on the table without selecting an item to clear it.
             </p>
           </div>
 
           <div className="bg-mc-dark p-3 rounded border-2 border-mc-stone">
-            <span className="text-mc-gold font-bold">3. ⏱️ MORE HINTS EVERY 10 MINUTES</span>
+            <span className="text-mc-gold font-bold">3. ⏱️ MORE HINTS AS TIME PASSES</span>
             <p className="mt-1 text-[11px] sm:text-xs">
-              If you get stuck, don&apos;t worry! Every 10 minutes, a new audio hint unlocks that makes the recipe even clearer!
+              If you get stuck, don&apos;t worry! New audio hints automatically unlock over time to make the recipe clearer!
             </p>
           </div>
 
           <div className="bg-mc-dark p-3 rounded border-2 border-mc-stone">
-            <span className="text-mc-gold font-bold">4. ⚡ CRAFT &amp; UNLOCK YOUR CLUE</span>
+            <span className="text-mc-gold font-bold">4. ⚡ CRAFT &amp; REVEAL YOUR CLUE</span>
             <p className="mt-1 text-[11px] sm:text-xs">
-              When your 3x3 table looks right, tap <span className="text-mc-gold font-bold">CRAFT RECIPE!</span> to test your alarm clock and reveal your secret birthday letter!
+              When your 3x3 table looks right, tap <span className="text-mc-gold font-bold">CRAFT RECIPE!</span> to forge the crown and reveal your secret birthday letter!
             </p>
           </div>
         </div>

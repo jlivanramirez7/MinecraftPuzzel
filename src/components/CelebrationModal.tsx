@@ -23,14 +23,14 @@ export const CelebrationModal: React.FC<CelebrationModalProps> = ({
             ★ ★ BIRTHDAY PUZZLE 1 OF 4 SOLVED ★ ★
           </p>
           <h1 className="text-sm sm:text-lg md:text-2xl font-minecraft text-white leading-tight">
-            PHANTOM-SLAYER SNOOZE BUTTON CRAFTED!
+            LEGENDARY BIRTHDAY CROWN CRAFTED!
           </h1>
         </div>
 
         {/* Story Resolution Text */}
         <p className="text-xs sm:text-sm text-mc-panel leading-relaxed mb-6 font-minecraft">
-          Steve slams the Emerald snooze button! The screeching 6:00 AM Phantoms vanish instantly from the sky,
-          and Steve can finally get his beauty sleep! Barnaby oinks in triumph!
+          Happy Birthday! You have successfully forged the Legendary Gamer Crown! Inside the royal crown chest,
+          you discover a glowing ancient cipher shard...
         </p>
 
         {/* --- SECRET LORE REVEAL: LETTER Q --- */}
@@ -40,7 +40,7 @@ export const CelebrationModal: React.FC<CelebrationModalProps> = ({
           </div>
 
           <p className="text-xs sm:text-sm text-mc-gold font-minecraft mt-2 mb-3">
-            Inside the alarm clock compartment, you discover a glowing ancient shard inscribed with a secret letter:
+            Your Secret Birthday Letter Clue:
           </p>
 
           {/* Glowing Mystery Letter Emblem [ Q ] */}

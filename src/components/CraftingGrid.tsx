@@ -88,31 +88,33 @@ export const CraftingGrid: React.FC<CraftingGridProps> = ({
         </div>
       </div>
 
-      {/* Output / Alarm Clock Preview Slot */}
+      {/* Output / Legendary Birthday Crown Preview Slot */}
       <div className="flex flex-col items-center">
         <div className="text-xs sm:text-sm text-mc-stoneDark mb-2 font-minecraft tracking-wider font-bold">
           RESULT
         </div>
         <div className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 bg-mc-stoneDark p-3 rounded border-4 border-mc-stone shadow-mc-slot flex flex-col items-center justify-center relative">
           <div className="w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 flex items-center justify-center animate-pulse">
-            {/* Phantom-Slayer Snooze Button Alarm Clock Icon */}
+            {/* Majestic Golden Birthday Crown Icon */}
             <svg viewBox="0 0 32 32" className="w-full h-full drop-shadow-md">
-              {/* Wooden & Gold Outer Frame */}
-              <rect x="4" y="8" width="24" height="20" rx="3" fill="#6D4C41" stroke="#3E2723" strokeWidth="2" />
-              <rect x="6" y="10" width="20" height="16" rx="2" fill="#FDD835" />
-              {/* Ticking Clock Face */}
-              <circle cx="16" cy="18" r="6" fill="#181E24" stroke="#00E5FF" strokeWidth="1.5" />
-              <line x1="16" y1="18" x2="16" y2="14" stroke="#FF1744" strokeWidth="1.5" strokeLinecap="round" />
-              <line x1="16" y1="18" x2="19" y2="18" stroke="#FFFFFF" strokeWidth="1.5" strokeLinecap="round" />
-              {/* Emerald Snooze Button on Top */}
-              <polygon points="12,4 20,4 22,8 10,8" fill="#00E676" stroke="#1B5E20" strokeWidth="1.2" />
-              {/* Obsidian Volcanic Feet */}
-              <rect x="6" y="28" width="5" height="3" fill="#1B1229" />
-              <rect x="21" y="28" width="5" height="3" fill="#1B1229" />
+              {/* Crown Silhouette */}
+              <polygon
+                points="3,25 29,25 27,9 20,18 16,7 12,18 5,9"
+                fill="#FFD700"
+                stroke="#F57F17"
+                strokeWidth="2"
+              />
+              {/* Center Diamond Gem */}
+              <polygon points="16,15 19,18 16,21 13,18" fill="#00E5FF" />
+              {/* Side Redstone Gems */}
+              <rect x="7" y="19" width="3" height="3" fill="#FF1744" />
+              <rect x="22" y="19" width="3" height="3" fill="#FF1744" />
+              {/* Bottom Emerald Band */}
+              <rect x="14" y="22" width="4" height="2" fill="#00E676" />
             </svg>
           </div>
           <span className="text-[9px] sm:text-[10px] text-mc-gold font-minecraft mt-1 text-center font-bold">
-            SNOOZE ALARM
+            BIRTHDAY CROWN
           </span>
         </div>
       </div>

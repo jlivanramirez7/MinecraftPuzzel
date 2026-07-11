@@ -286,7 +286,7 @@ export const App: React.FC = () => {
       setPuzzleIsSolved(true);
       soundEngine.playLevelUpFanfare(isAudioMuted);
       soundEngine.speakText(
-        'Achievement Unlocked! You crafted the Phantom-Slayer Snooze Button! Inside the alarm clock, you discover your secret birthday clue: the letter Q! Write down the letter Q on your clue sheet!',
+        'Happy Birthday! You forged the Legendary Birthday Crown! Inside the royal chest, you discover your secret birthday clue: the letter Q! Write down the letter Q on your clue sheet!',
         isAudioMuted,
         1.05,
         0.95
@@ -344,14 +344,14 @@ export const App: React.FC = () => {
         <header className="bg-mc-stoneDark border-4 border-mc-stone p-4 sm:p-5 rounded-lg shadow-mc-inset flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-3.5">
             <div className="w-12 h-12 sm:w-14 sm:h-14 bg-mc-dirtDark border-2 border-mc-gold rounded flex items-center justify-center text-2xl sm:text-3xl shadow">
-              ⏰
+              👑
             </div>
             <div>
               <h1 className="text-sm sm:text-base md:text-lg text-mc-gold font-minecraft tracking-tight font-bold">
-                THE PHANTOM-SLAYER SNOOZE BUTTON
+                THE LEGENDARY BIRTHDAY CROWN
               </h1>
               <p className="text-[10px] sm:text-xs text-mc-panel mt-1 font-minecraft">
-                Help Steve &amp; Barnaby craft the ultimate 6:00 AM Phantom alarm clock!
+                Craft the Ultimate Gamer Crown to reveal Secret Birthday Letter 1 of 4!
               </p>
             </div>
           </div>
@@ -464,7 +464,7 @@ export const App: React.FC = () => {
 
       {/* Footer Info */}
       <footer className="max-w-6xl mx-auto w-full mt-8 text-center text-[10px] text-mc-panel/60 font-mono">
-        The Phantom-Slayer Snooze Button • Birthday Treasure Puzzle 1 of 4 (Letter Q) • Host PIN: 1234 • Containerized for Google Cloud Run
+        The Legendary Birthday Crown • Birthday Treasure Puzzle 1 of 4 (Letter Q) • Host PIN: 1234 • Containerized for Google Cloud Run
       </footer>
     </div>
   );
