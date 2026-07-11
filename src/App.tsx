@@ -4,6 +4,7 @@ import { CraftingGrid } from './components/CraftingGrid';
 import { InventoryHotbar } from './components/InventoryHotbar';
 import { AudioRiddleBar } from './components/AudioRiddleBar';
 import { InstructionsModal } from './components/InstructionsModal';
+import { ResetConfirmModal } from './components/ResetConfirmModal';
 import { VillagerChatBubble } from './components/VillagerChatBubble';
 import { CelebrationModal } from './components/CelebrationModal';
 import { WINNING_RECIPE, HINT_TIERS, MOCK_QUOTES } from './data/riddle';
@@ -105,6 +106,7 @@ export const App: React.FC = () => {
   // Transient UI State
   const [selectedBlockId, setSelectedBlockId] = useState<BlockId | null>(null);
   const [isInstructionsOpen, setIsInstructionsOpen] = useState<boolean>(false);
+  const [isResetModalOpen, setIsResetModalOpen] = useState<boolean>(false);
   const [elapsedSeconds, setElapsedSeconds] = useState<number>(() =>
     Math.floor((Date.now() - getInitialStartTime()) / 1000)
   );
@@ -314,7 +316,15 @@ export const App: React.FC = () => {
       {/* Celebration Overlay Modal (Secret Letter Q Reveal) */}
       <CelebrationModal
         isOpen={puzzleIsSolved}
-        onReset={handleResetPuzzle}
+        onReset={() => setIsResetModalOpen(true)}
+      />
+
+      {/* Host Password PIN 1234 Reset Modal */}
+      <ResetConfirmModal
+        isOpen={isResetModalOpen}
+        onClose={() => setIsResetModalOpen(false)}
+        onConfirmReset={handleResetPuzzle}
+        isMuted={isAudioMuted}
       />
 
       {/* Instructions Popup Modal */}
@@ -346,7 +356,7 @@ export const App: React.FC = () => {
             </div>
           </div>
 
-          {/* Primary Top Action Bar: HOW TO PLAY & LISTEN TO RIDDLE (5-Min Cooldown) */}
+          {/* Primary Top Action Bar: HOW TO PLAY, LISTEN TO RIDDLE, & PIN RESET */}
           <div className="flex flex-wrap items-center gap-2.5">
             <button
               onClick={() => setIsInstructionsOpen(true)}
@@ -394,11 +404,11 @@ export const App: React.FC = () => {
             </button>
 
             <button
-              onClick={handleResetPuzzle}
+              onClick={() => setIsResetModalOpen(true)}
               className="bg-mc-stone border-2 border-mc-panel hover:border-mc-redstone hover:bg-mc-redstone/20 text-white px-3 py-2.5 rounded text-xs font-minecraft transition-all font-bold"
-              title="Reset Puzzle Progress & Cooldowns"
+              title="Host PIN Reset (Requires PIN 1234)"
             >
-              🔄 Reset
+              🔒 Reset
             </button>
           </div>
         </header>
@@ -454,7 +464,7 @@ export const App: React.FC = () => {
 
       {/* Footer Info */}
       <footer className="max-w-6xl mx-auto w-full mt-8 text-center text-[10px] text-mc-panel/60 font-mono">
-        The Phantom-Slayer Snooze Button • Birthday Treasure Puzzle 1 of 4 (Letter Q) • Containerized for Google Cloud Run
+        The Phantom-Slayer Snooze Button • Birthday Treasure Puzzle 1 of 4 (Letter Q) • Host PIN: 1234 • Containerized for Google Cloud Run
       </footer>
     </div>
   );
