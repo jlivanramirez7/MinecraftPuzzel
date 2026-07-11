@@ -220,6 +220,12 @@ export const App: React.FC = () => {
     if (isCorrect) {
       setPuzzleIsSolved(true);
       soundEngine.playLevelUpFanfare(isAudioMuted);
+      soundEngine.speakText(
+        'Achievement Unlocked! You crafted the Phantom-Slayer Snooze Button! Inside the alarm clock, you discover your secret birthday clue: the letter Q! Write down the letter Q on your clue sheet!',
+        isAudioMuted,
+        1.05,
+        0.95
+      );
       try {
         confetti({
           particleCount: 180,
