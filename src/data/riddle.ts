@@ -12,18 +12,16 @@ export const HINT_TIERS: HintTier[] = [
     id: 'base',
     title: '📜 The Riddle',
     unlockMinutes: 0,
-    text: `To stand against the morning screeches, the clock needs heavy feet.
-Two blocks of fiery volcanic glass anchor the bottom edges neat.
-Right between those heavy feet, a shiny green gem must rest—
-The ultimate snooze button to put the snoring sky to test!
+    text: `Where morning screeches fill the sky, a timbered canopy holds high,
+With gleaming yellow wealth crowned proud between the branches dry.
 
-The heart of the clock must tick-tock with a miner’s ultimate prize,
-Flanked on its left and right by red, buzzing energy that flies.
+Below that roof, the ticking core burns with a frost-blue crystal spark,
+Guarded on either side by crimson dust that hums across the dark.
 
-To frame the roof against the rain, use wood from the forest trees
-In the high corners, smelling fresh of the morning breeze.
-But in the top-center sits a solid block of gold—
-Because Steve wants to look incredibly rich, or so I have been told!`,
+To anchor down this sky-ward clock against the Phantom storm,
+Twin dark volcanic pillars keep the bottom edges uniform.
+And rested 'twixt those midnight stones, the emerald snooze awaits—
+Strike down upon the forest gem to seal the screeches' fates!`,
   },
   {
     id: 'hint1',
