@@ -139,7 +139,6 @@ export const App: React.FC = () => {
     localStorage.setItem(STORAGE_KEYS.LAST_LISTEN, lastRiddleListenTime.toString());
   }, [lastRiddleListenTime]);
 
-  // Speak a text aloud via SpeechSynthesis
   const speakTextAloud = useCallback(
     (text: string) => {
       soundEngine.speakText(text, isAudioMuted);
@@ -165,7 +164,6 @@ export const App: React.FC = () => {
       return;
     }
 
-    // Set listen timestamp and speak straight to the riddle!
     setLastRiddleListenTime(now);
 
     const baseRiddle = HINT_TIERS[0].text;
@@ -207,12 +205,10 @@ export const App: React.FC = () => {
       const elapsedSecs = Math.floor((now - puzzleStartTime) / 1000);
       setElapsedSeconds(elapsedSecs);
 
-      // Check Riddle Recharge Countdown
       const elapsedSinceListen = Math.floor((now - lastRiddleListenTime) / 1000);
       const rechargeRemaining = Math.max(0, RIDDLE_COOLDOWN_SECONDS - elapsedSinceListen);
       setCooldownRemainingSeconds(rechargeRemaining);
 
-      // Hint schedule progression check (Section 3)
       if (elapsedSecs >= 10 * 60 && !unlockedHints.includes('hint1')) {
         unlockHintTier('hint1');
       }
@@ -227,7 +223,6 @@ export const App: React.FC = () => {
     return () => clearInterval(timer);
   }, [puzzleStartTime, unlockedHints, unlockHintTier, lastRiddleListenTime]);
 
-  // Manual Dev / Kid "Unlock Next Hint Now" Helper
   const handleUnlockNextHint = () => {
     const nextLocked = HINT_TIERS.find((t) => !unlockedHints.includes(t.id));
     if (nextLocked) {
@@ -243,7 +238,6 @@ export const App: React.FC = () => {
     return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
   };
 
-  // Tablet Core Tap-to-Place / Remove logic
   const handleSlotClick = (index: number) => {
     setCraftingGrid((prev) => {
       const next = [...prev];
@@ -335,7 +329,7 @@ export const App: React.FC = () => {
         onDismiss={() => setCurrentMockQuote(null)}
       />
 
-      <div className="max-w-5xl mx-auto w-full space-y-5">
+      <div className="max-w-6xl mx-auto w-full space-y-5">
         {/* Top Header & Main Audio/Help Controls */}
         <header className="bg-mc-stoneDark border-4 border-mc-stone p-4 sm:p-5 rounded-lg shadow-mc-inset flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-3.5">
@@ -417,10 +411,20 @@ export const App: React.FC = () => {
           onUnlockNextHint={handleUnlockNextHint}
         />
 
-        {/* --- FRONT AND CENTER: THE 3x3 CRAFTING WORKSPACE --- */}
-        <div className="space-y-5">
-          {/* Big 3x3 Crafting Table Centerpiece */}
-          <div className="w-full">
+        {/* --- FRONT AND CENTER SIDE-BY-SIDE LAYOUT (LEFT: 9 BLOCKS, RIGHT: 3x3 TABLE) --- */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+          {/* LEFT SIDE: 9 Possible Blocks Inventory Panel (col-span-5) */}
+          <div className="lg:col-span-5 w-full flex flex-col">
+            <InventoryHotbar
+              selectedBlockId={selectedBlockId}
+              onSelectBlock={(blockId) =>
+                setSelectedBlockId((prev) => (prev === blockId ? null : blockId))
+              }
+            />
+          </div>
+
+          {/* RIGHT SIDE: 3x3 Crafting Table Centerpiece (col-span-7) */}
+          <div className="lg:col-span-7 w-full flex flex-col justify-between space-y-4">
             <CraftingGrid
               gridState={craftingGrid}
               selectedBlockId={selectedBlockId}
@@ -428,8 +432,8 @@ export const App: React.FC = () => {
               onSlotDrop={handleSlotDrop}
             />
 
-            {/* Core Action Buttons Directly Below Table */}
-            <div className="mt-4 flex flex-col sm:flex-row items-center justify-between gap-3 bg-mc-stoneDark p-4 rounded-lg border-4 border-mc-stone">
+            {/* Core Action Buttons Directly Below Crafting Table */}
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-mc-stoneDark p-4 rounded-lg border-4 border-mc-stone">
               <button
                 onClick={handleClearTable}
                 className="w-full sm:w-auto bg-mc-stone hover:bg-mc-panelDark text-white border-2 border-mc-panel px-6 py-4 rounded text-xs font-minecraft transition-all font-bold"
@@ -445,21 +449,11 @@ export const App: React.FC = () => {
               </button>
             </div>
           </div>
-
-          {/* Block Inventory Hotbar Directly Below */}
-          <div className="w-full">
-            <InventoryHotbar
-              selectedBlockId={selectedBlockId}
-              onSelectBlock={(blockId) =>
-                setSelectedBlockId((prev) => (prev === blockId ? null : blockId))
-              }
-            />
-          </div>
         </div>
       </div>
 
       {/* Footer Info */}
-      <footer className="max-w-5xl mx-auto w-full mt-8 text-center text-[10px] text-mc-panel/60 font-mono">
+      <footer className="max-w-6xl mx-auto w-full mt-8 text-center text-[10px] text-mc-panel/60 font-mono">
         The Phantom-Slayer Snooze Button • Birthday Treasure Puzzle 1 of 4 (Letter Q) • Containerized for Google Cloud Run
       </footer>
     </div>
