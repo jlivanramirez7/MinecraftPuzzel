@@ -157,7 +157,7 @@ export const App: React.FC = () => {
       if (elapsedSecs >= 20 * 60 && !unlockedHints.includes('hint2')) {
         unlockHintTier('hint2');
       }
-      if (elapsedSecs >= 30 * 60 && !unlockedHints.includes('solution')) {
+      if (elapsedSecs >= 60 * 60 && !unlockedHints.includes('solution')) {
         unlockHintTier('solution');
       }
     }, 1000);
