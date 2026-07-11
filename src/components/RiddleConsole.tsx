@@ -19,7 +19,6 @@ export const RiddleConsole: React.FC<RiddleConsoleProps> = ({
     unlockedHints[unlockedHints.length - 1] || 'base'
   );
 
-  // Calculate next locked hint tier and remaining countdown
   const nextLockedTier = HINT_TIERS.find((tier) => !unlockedHints.includes(tier.id));
   const nextUnlockSeconds = nextLockedTier ? nextLockedTier.unlockMinutes * 60 : null;
   const remainingSeconds =
@@ -31,43 +30,45 @@ export const RiddleConsole: React.FC<RiddleConsoleProps> = ({
     return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
   };
 
-  // Ensure active tab defaults to latest unlocked if selected is locked
   const activeTier =
     HINT_TIERS.find((t) => t.id === selectedHintId && unlockedHints.includes(t.id)) ||
     HINT_TIERS.find((t) => t.id === unlockedHints[unlockedHints.length - 1]) ||
     HINT_TIERS[0];
 
   return (
-    <div className="bg-mc-stone border-4 border-mc-stoneDark p-4 rounded-lg shadow-mc-inset text-white w-full">
-      {/* Header & Countdown Timer */}
-      <div className="flex flex-wrap items-center justify-between gap-3 mb-3 pb-2 border-b-2 border-mc-stoneDark">
-        <div className="flex items-center gap-2">
-          {/* Ancient Scroll / Riddle Icon */}
-          <span className="text-xl">📜</span>
-          <h2 className="text-xs sm:text-sm text-mc-gold uppercase tracking-wider">
-            ANCIENT CRAFTING RIDDLE
-          </h2>
+    <div className="bg-mc-stone border-4 border-mc-stoneDark p-4 md:p-5 rounded-lg shadow-mc-inset text-white w-full">
+      {/* Top Banner & Countdown Console */}
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-4 pb-3 border-b-4 border-mc-stoneDark">
+        <div className="flex items-center gap-2.5">
+          <span className="text-2xl sm:text-3xl">💤</span>
+          <div>
+            <h2 className="text-xs sm:text-sm md:text-base text-mc-gold uppercase tracking-wider font-minecraft">
+              STEVE&apos;S ALARM CLOCK EMERGENCY!
+            </h2>
+            <p className="text-[10px] sm:text-xs text-mc-panel mt-0.5 font-minecraft">
+              Snooze the screeching 6:00 AM Phantoms!
+            </p>
+          </div>
         </div>
 
         <div className="flex items-center gap-2">
           {nextLockedTier ? (
-            <div className="bg-mc-dark px-3 py-1 rounded border-2 border-mc-stoneDark flex items-center gap-2">
-              <span className="text-[10px] text-mc-panel">NEXT HINT IN:</span>
+            <div className="bg-mc-dark px-3 py-1.5 rounded border-2 border-mc-stoneDark flex items-center gap-2">
+              <span className="text-[10px] sm:text-xs text-mc-panel">NEXT HINT IN:</span>
               <span className="text-xs sm:text-sm font-mono text-mc-diamond font-bold">
                 {formatCountdown(remainingSeconds)}
               </span>
             </div>
           ) : (
-            <div className="bg-mc-dark px-3 py-1 rounded border-2 border-mc-emerald text-mc-emerald text-xs">
+            <div className="bg-mc-dark px-3 py-1.5 rounded border-2 border-mc-emerald text-mc-emerald text-xs font-bold">
               ALL HINTS UNLOCKED
             </div>
           )}
 
-          {/* Dev/Kid Helper Button to instantly unlock next hint tier */}
           {nextLockedTier && (
             <button
               onClick={onUnlockNextHint}
-              className="bg-mc-stoneDark hover:bg-mc-gold hover:text-black border-2 border-mc-panel text-white text-[10px] px-2 py-1 rounded transition-colors"
+              className="bg-mc-stoneDark hover:bg-mc-gold hover:text-black border-2 border-mc-panel text-white text-[10px] sm:text-xs px-2.5 py-1.5 rounded transition-colors font-bold"
               title="Unlock Next Hint Instantly"
             >
               + Unlock Hint
@@ -76,8 +77,8 @@ export const RiddleConsole: React.FC<RiddleConsoleProps> = ({
         </div>
       </div>
 
-      {/* Tabs for Unlocked Hints */}
-      <div className="flex flex-wrap gap-1.5 mb-3">
+      {/* Interactive Tabs for Unlocked Story & Hints */}
+      <div className="flex flex-wrap gap-2 mb-4">
         {HINT_TIERS.map((tier) => {
           const isUnlocked = unlockedHints.includes(tier.id);
           const isSelected = activeTier.id === tier.id;
@@ -88,12 +89,12 @@ export const RiddleConsole: React.FC<RiddleConsoleProps> = ({
               onClick={() => isUnlocked && setSelectedHintId(tier.id)}
               disabled={!isUnlocked}
               className={`
-                px-2.5 py-1.5 rounded text-[10px] sm:text-xs font-minecraft border-2 transition-all duration-150
+                px-3 py-2 rounded text-xs sm:text-sm font-minecraft border-2 transition-all duration-150
                 ${
                   !isUnlocked
-                    ? 'bg-mc-stoneDark/50 border-mc-stoneDark text-white/30 cursor-not-allowed'
+                    ? 'bg-mc-stoneDark/60 border-mc-stoneDark text-white/30 cursor-not-allowed'
                     : isSelected
-                    ? 'bg-mc-gold border-white text-black shadow-md font-bold'
+                    ? 'bg-mc-gold border-white text-black shadow-lg font-bold scale-105'
                     : 'bg-mc-stoneDark border-mc-panel text-white hover:bg-mc-panelDark'
                 }
               `}
@@ -105,18 +106,22 @@ export const RiddleConsole: React.FC<RiddleConsoleProps> = ({
         })}
       </div>
 
-      {/* Riddle Display Box */}
-      <div className="bg-mc-dark/90 border-4 border-mc-stoneDark p-4 rounded min-h-[96px] flex flex-col justify-between">
-        <div className="text-xs sm:text-sm text-mc-panel leading-relaxed font-minecraft whitespace-pre-line">
+      {/* Parchment-Style Story Scroll Box */}
+      <div className="bg-[#1f1610] border-4 border-[#52361b] p-4 sm:p-5 rounded-lg shadow-inner flex flex-col justify-between">
+        <div className="text-xs sm:text-sm md:text-base text-[#f5e6ca] leading-relaxed font-minecraft whitespace-pre-line border-l-4 border-mc-gold pl-3 sm:pl-4 my-1">
           {activeTier.text}
         </div>
 
-        <div className="mt-3 flex justify-end">
+        <div className="mt-4 pt-3 border-t-2 border-[#52361b] flex flex-wrap items-center justify-between gap-3">
+          <span className="text-[10px] sm:text-xs text-[#a88a64] font-minecraft">
+            🐷 Piggy Barnaby says: &quot;Listen closely to every line!&quot;
+          </span>
+
           <button
             onClick={() => onSpeakRiddle(activeTier.text)}
-            className="bg-mc-stoneDark hover:bg-mc-panelDark border-2 border-mc-panel px-3 py-1.5 rounded text-[10px] sm:text-xs text-mc-gold flex items-center gap-1.5 transition-colors"
+            className="bg-[#3e2716] hover:bg-mc-gold hover:text-black border-2 border-[#a88a64] px-4 py-2 rounded text-xs sm:text-sm text-mc-gold flex items-center gap-2 transition-all font-bold"
           >
-            <span>🔊</span> Speak Aloud
+            <span>🔊</span> Speak Story &amp; Riddle Aloud
           </button>
         </div>
       </div>

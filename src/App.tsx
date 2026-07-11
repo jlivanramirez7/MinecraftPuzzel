@@ -93,7 +93,7 @@ export const App: React.FC = () => {
   );
   const [currentMockQuote, setCurrentMockQuote] = useState<string | null>(null);
 
-  // Sync state changes to localStorage (Section 6)
+  // Sync state changes to localStorage (Section 5)
   useEffect(() => {
     localStorage.setItem(STORAGE_KEYS.GRID_STATE, JSON.stringify(craftingGrid));
   }, [craftingGrid]);
@@ -151,7 +151,6 @@ export const App: React.FC = () => {
       const elapsedSecs = Math.floor((now - puzzleStartTime) / 1000);
       setElapsedSeconds(elapsedSecs);
 
-      // Hint schedule check (Section 3)
       if (elapsedSecs >= 10 * 60 && !unlockedHints.includes('hint1')) {
         unlockHintTier('hint1');
       }
@@ -170,29 +169,25 @@ export const App: React.FC = () => {
   const handleUnlockNextHint = () => {
     const nextLocked = HINT_TIERS.find((t) => !unlockedHints.includes(t.id));
     if (nextLocked) {
-      // Advance puzzle start time back so that remaining countdown naturally reflects the jump
       const targetSecs = nextLocked.unlockMinutes * 60;
       setPuzzleStartTime(Date.now() - targetSecs * 1000);
       unlockHintTier(nextLocked.id, true);
     }
   };
 
-  // Tablet Core Tap-to-Place / Remove logic (Section 4)
+  // Tablet Core Tap-to-Place / Remove logic
   const handleSlotClick = (index: number) => {
     setCraftingGrid((prev) => {
       const next = [...prev];
       if (selectedBlockId) {
-        // Place or replace selected item in slot
         next[index] = selectedBlockId;
       } else {
-        // Tapping without a selected item removes block from slot
         next[index] = null;
       }
       return next;
     });
   };
 
-  // Drag and drop onto grid slot
   const handleSlotDrop = (index: number, blockId: BlockId) => {
     setCraftingGrid((prev) => {
       const next = [...prev];
@@ -201,12 +196,10 @@ export const App: React.FC = () => {
     });
   };
 
-  // Clear entire crafting table
   const handleClearTable = () => {
     setCraftingGrid(Array(9).fill(null));
   };
 
-  // Reset entire puzzle state
   const handleResetPuzzle = () => {
     setCraftingGrid(Array(9).fill(null));
     const now = Date.now();
@@ -219,22 +212,18 @@ export const App: React.FC = () => {
     soundEngine.cancelSpeech();
   };
 
-  // Submit Recipe Evaluation (Section 5)
   const handleSubmitRecipe = () => {
-    // Check if every slot matches WINNING_RECIPE exactly
     const isCorrect = WINNING_RECIPE.every(
       (expectedBlock, idx) => craftingGrid[idx] === expectedBlock
     );
 
     if (isCorrect) {
-      // SUCCESS!
       setPuzzleIsSolved(true);
       soundEngine.playLevelUpFanfare(isAudioMuted);
-      // Trigger canvas-confetti fireworks
       try {
         confetti({
-          particleCount: 160,
-          spread: 120,
+          particleCount: 180,
+          spread: 130,
           origin: { y: 0.55 },
           colors: ['#FFD700', '#00E5FF', '#FF1744', '#00E676', '#FFFFFF'],
         });
@@ -242,7 +231,6 @@ export const App: React.FC = () => {
         console.warn('Confetti error', e);
       }
     } else {
-      // FAIL (MOCKING ENGINE)
       soundEngine.playOofBuzzer(isAudioMuted);
       const randomMock = MOCK_QUOTES[Math.floor(Math.random() * MOCK_QUOTES.length)];
       setCurrentMockQuote(randomMock);
@@ -252,42 +240,37 @@ export const App: React.FC = () => {
 
   return (
     <div className="min-h-screen flex flex-col justify-between bg-mc-dark p-3 sm:p-6 pb-12">
-      {/* Celebration Overlay Modal */}
       <CelebrationModal
         isOpen={puzzleIsSolved}
         onReset={handleResetPuzzle}
       />
 
-      {/* Villager Chat Mock Bubble */}
       <VillagerChatBubble
         mockQuote={currentMockQuote}
         onDismiss={() => setCurrentMockQuote(null)}
       />
 
-      {/* Main Container */}
-      <div className="max-w-5xl mx-auto w-full space-y-5">
+      <div className="max-w-6xl mx-auto w-full space-y-5">
         {/* Header Bar */}
-        <header className="bg-mc-stoneDark border-4 border-mc-stone p-4 rounded-lg shadow-mc-inset flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            {/* Minecraft Chest Icon */}
-            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-mc-dirtDark border-2 border-mc-gold rounded flex items-center justify-center text-xl sm:text-2xl shadow">
-              🎂
+        <header className="bg-mc-stoneDark border-4 border-mc-stone p-4 sm:p-5 rounded-lg shadow-mc-inset flex flex-wrap items-center justify-between gap-4">
+          <div className="flex items-center gap-3.5">
+            <div className="w-12 h-12 sm:w-14 sm:h-14 bg-mc-dirtDark border-2 border-mc-gold rounded flex items-center justify-center text-2xl sm:text-3xl shadow">
+              ⏰
             </div>
             <div>
-              <h1 className="text-sm sm:text-base md:text-lg text-mc-gold font-minecraft tracking-tight">
-                BIRTHDAY MASTER CRAFTER
+              <h1 className="text-sm sm:text-base md:text-lg text-mc-gold font-minecraft tracking-tight font-bold">
+                THE PHANTOM-SLAYER SNOOZE BUTTON
               </h1>
-              <p className="text-[10px] sm:text-xs text-mc-panel mt-0.5 font-minecraft">
-                Craft the Legendary Gamer Crown to Unlock Your Gift!
+              <p className="text-[10px] sm:text-xs text-mc-panel mt-1 font-minecraft">
+                Help Steve &amp; Barnaby craft the ultimate 6:00 AM Phantom alarm clock!
               </p>
             </div>
           </div>
 
-          {/* Top Right Action Buttons (Tablet Accessible) */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2.5">
             <button
               onClick={() => setIsAudioMuted(!isAudioMuted)}
-              className={`px-3 py-2 rounded text-xs border-2 flex items-center gap-1.5 font-minecraft transition-all ${
+              className={`px-3.5 py-2.5 rounded text-xs border-2 flex items-center gap-1.5 font-minecraft transition-all font-bold ${
                 isAudioMuted
                   ? 'bg-mc-redstone border-white text-white'
                   : 'bg-mc-stone border-mc-panel hover:border-mc-gold text-white'
@@ -302,7 +285,7 @@ export const App: React.FC = () => {
 
             <button
               onClick={handleResetPuzzle}
-              className="bg-mc-stone border-2 border-mc-panel hover:border-mc-redstone hover:bg-mc-redstone/20 text-white px-3 py-2 rounded text-xs font-minecraft transition-all"
+              className="bg-mc-stone border-2 border-mc-panel hover:border-mc-redstone hover:bg-mc-redstone/20 text-white px-3.5 py-2.5 rounded text-xs font-minecraft transition-all font-bold"
               title="Reset Puzzle Progress"
             >
               🔄 Reset
@@ -310,7 +293,7 @@ export const App: React.FC = () => {
           </div>
         </header>
 
-        {/* Section 3: Riddle & Hint Progression Engine */}
+        {/* Section 2 & 3: Riddle & Hint Progression Engine */}
         <RiddleConsole
           unlockedHints={unlockedHints}
           elapsedSeconds={elapsedSeconds}
@@ -320,7 +303,7 @@ export const App: React.FC = () => {
 
         {/* Main Crafting Workspace Grid + Inventory */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
-          {/* Crafting Grid Area (Left / Center on tablet) */}
+          {/* Crafting Grid Area */}
           <div className="lg:col-span-7 w-full">
             <CraftingGrid
               gridState={craftingGrid}
@@ -329,25 +312,25 @@ export const App: React.FC = () => {
               onSlotDrop={handleSlotDrop}
             />
 
-            {/* Core Action Control Bar (Clear & Submit) */}
-            <div className="mt-4 flex flex-col sm:flex-row items-center justify-between gap-3 bg-mc-stoneDark p-3 rounded border-4 border-mc-stone">
+            {/* Action Buttons (Tablet Big Touch Targets) */}
+            <div className="mt-4 flex flex-col sm:flex-row items-center justify-between gap-3 bg-mc-stoneDark p-3.5 rounded border-4 border-mc-stone">
               <button
                 onClick={handleClearTable}
-                className="w-full sm:w-auto bg-mc-stone hover:bg-mc-panelDark text-white border-2 border-mc-panel px-4 py-3 rounded text-xs font-minecraft transition-all"
+                className="w-full sm:w-auto bg-mc-stone hover:bg-mc-panelDark text-white border-2 border-mc-panel px-5 py-3.5 rounded text-xs font-minecraft transition-all font-bold"
               >
                 🧹 CLEAR TABLE
               </button>
 
               <button
                 onClick={handleSubmitRecipe}
-                className="w-full sm:w-auto bg-mc-gold hover:bg-white text-black font-bold border-4 border-mc-stoneDark px-8 py-3.5 rounded text-sm font-minecraft shadow-mc-button hover:scale-105 active:scale-95 transition-all"
+                className="w-full sm:w-auto bg-mc-gold hover:bg-white text-black font-bold border-4 border-mc-stoneDark px-8 py-4 rounded text-sm font-minecraft shadow-mc-button hover:scale-105 active:scale-95 transition-all"
               >
                 ⚡ CRAFT RECIPE!
               </button>
             </div>
           </div>
 
-          {/* Section 2: Crafting Block Inventory (Right on desktop, Below on tablet portrait) */}
+          {/* Block Inventory Hotbar */}
           <div className="lg:col-span-5 w-full">
             <InventoryHotbar
               selectedBlockId={selectedBlockId}
@@ -356,23 +339,25 @@ export const App: React.FC = () => {
               }
             />
 
-            {/* Quick Tablet Interaction Guide */}
-            <div className="mt-3 bg-mc-stone/60 border-2 border-mc-stoneDark p-3 rounded text-[11px] text-mc-panel space-y-1.5">
-              <div className="text-mc-gold uppercase font-bold text-xs">
-                💡 Tablet Control Tips:
+            {/* Kid & Tablet Friendly Interaction Tips */}
+            <div className="mt-3.5 bg-mc-stone/70 border-2 border-mc-stoneDark p-3.5 rounded text-xs text-mc-panel space-y-2">
+              <div className="text-mc-gold uppercase font-bold text-xs font-minecraft">
+                💡 Tablet Touch Tips (For 10-Year-Old Fingers):
               </div>
-              <div>• Tap an inventory item below to select it (yellow highlight).</div>
-              <div>• Tap any grid slot on the Crafting Table to place it.</div>
-              <div>• Tap a slot without a selected item to remove that block.</div>
-              <div>• Press &apos;Craft Recipe!&apos; when your 3x3 layout matches the riddle!</div>
+              <div className="font-minecraft text-[11px] leading-relaxed">
+                • Tap any block below to select it (yellow outline).<br />
+                • Tap any slot on the 3x3 table to place it.<br />
+                • Tap a slot without a selected item to clear that block.<br />
+                • Press &apos;Craft Recipe!&apos; when your grid matches Barnaby&apos;s story!
+              </div>
             </div>
           </div>
         </div>
       </div>
 
       {/* Footer Info */}
-      <footer className="max-w-5xl mx-auto w-full mt-6 text-center text-[10px] text-mc-panel/60 font-mono">
-        Happy Birthday! Containerized & Ready for Google Cloud Run • Built with React 18, TypeScript, & Tailwind CSS
+      <footer className="max-w-6xl mx-auto w-full mt-6 text-center text-[10px] text-mc-panel/60 font-mono">
+        The Phantom-Slayer Snooze Button • Happy Birthday! • Containerized &amp; Ready for Google Cloud Run
       </footer>
     </div>
   );
