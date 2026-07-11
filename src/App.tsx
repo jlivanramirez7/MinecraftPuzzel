@@ -16,6 +16,7 @@ const STORAGE_KEYS = {
   HINTS_LIST: 'unlocked_hints_list',
   IS_SOLVED: 'puzzle_is_solved',
   IS_MUTED: 'is_audio_muted',
+  LAST_LISTEN: 'last_riddle_listen_time',
 };
 
 const getInitialGridState = (): GridState => {
@@ -79,6 +80,19 @@ const getInitialMutedState = (): boolean => {
   }
 };
 
+const getInitialLastListen = (): number => {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEYS.LAST_LISTEN);
+    if (saved) {
+      const num = Number(saved);
+      if (!isNaN(num)) return num;
+    }
+  } catch {
+    // ignore
+  }
+  return 0;
+};
+
 export const App: React.FC = () => {
   // Core Persistent State
   const [craftingGrid, setCraftingGrid] = useState<GridState>(getInitialGridState);
@@ -86,6 +100,7 @@ export const App: React.FC = () => {
   const [unlockedHints, setUnlockedHints] = useState<HintTierId[]>(getInitialHints);
   const [puzzleIsSolved, setPuzzleIsSolved] = useState<boolean>(getInitialSolvedState);
   const [isAudioMuted, setIsAudioMuted] = useState<boolean>(getInitialMutedState);
+  const [lastRiddleListenTime, setLastRiddleListenTime] = useState<number>(getInitialLastListen);
 
   // Transient UI State
   const [selectedBlockId, setSelectedBlockId] = useState<BlockId | null>(null);
@@ -93,6 +108,7 @@ export const App: React.FC = () => {
   const [elapsedSeconds, setElapsedSeconds] = useState<number>(() =>
     Math.floor((Date.now() - getInitialStartTime()) / 1000)
   );
+  const [cooldownRemainingSeconds, setCooldownRemainingSeconds] = useState<number>(0);
   const [currentMockQuote, setCurrentMockQuote] = useState<string | null>(null);
 
   // Sync state changes to localStorage
@@ -119,7 +135,11 @@ export const App: React.FC = () => {
     }
   }, [isAudioMuted]);
 
-  // Speak a hint or riddle aloud via SpeechSynthesis
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEYS.LAST_LISTEN, lastRiddleListenTime.toString());
+  }, [lastRiddleListenTime]);
+
+  // Speak a text aloud via SpeechSynthesis
   const speakTextAloud = useCallback(
     (text: string) => {
       soundEngine.speakText(text, isAudioMuted);
@@ -127,15 +147,39 @@ export const App: React.FC = () => {
     [isAudioMuted]
   );
 
-  // Play full audio riddle + any unlocked hints sequentially
-  const handleListenToRiddle = useCallback(() => {
-    const unlockedTexts = HINT_TIERS.filter((tier) =>
-      unlockedHints.includes(tier.id)
-    ).map((t) => `${t.title}. ${t.text}`);
+  // 5-Minute Cooldown logic (300 seconds) for Listening to the Riddle
+  const RIDDLE_COOLDOWN_SECONDS = 300;
 
-    const combinedSpeech = unlockedTexts.join(' ... Next audio clue: ');
-    soundEngine.speakText(combinedSpeech, isAudioMuted);
-  }, [unlockedHints, isAudioMuted]);
+  const handleListenToRiddle = useCallback(() => {
+    const now = Date.now();
+    const elapsedSinceListen = Math.floor((now - lastRiddleListenTime) / 1000);
+
+    if (elapsedSinceListen < RIDDLE_COOLDOWN_SECONDS) {
+      const remaining = RIDDLE_COOLDOWN_SECONDS - elapsedSinceListen;
+      const mins = Math.floor(remaining / 60);
+      const secs = remaining % 60;
+      soundEngine.speakText(
+        `The riddle is recharging! Please wait ${mins} minutes and ${secs} seconds before listening again.`,
+        isAudioMuted
+      );
+      return;
+    }
+
+    // Set listen timestamp and speak straight to the riddle!
+    setLastRiddleListenTime(now);
+
+    const baseRiddle = HINT_TIERS[0].text;
+    const unlockedHintTexts = HINT_TIERS.filter(
+      (tier) => tier.id !== 'base' && unlockedHints.includes(tier.id)
+    ).map((t) => `${t.title}: ${t.text}`);
+
+    const fullAudioText =
+      unlockedHintTexts.length > 0
+        ? `${baseRiddle} ... Unlocked Hints: ${unlockedHintTexts.join(' ... ')}`
+        : baseRiddle;
+
+    soundEngine.speakText(fullAudioText, isAudioMuted);
+  }, [lastRiddleListenTime, unlockedHints, isAudioMuted]);
 
   // Helper to unlock a specific hint tier
   const unlockHintTier = useCallback(
@@ -156,13 +200,19 @@ export const App: React.FC = () => {
     [isAudioMuted, speakTextAloud]
   );
 
-  // Riddle Loop & Timer Monitor (Auto-unlock at 10m, 20m, 60m)
+  // 1-second Interval: Update elapsed puzzle time & check 5-min Riddle recharge countdown
   useEffect(() => {
     const timer = setInterval(() => {
       const now = Date.now();
       const elapsedSecs = Math.floor((now - puzzleStartTime) / 1000);
       setElapsedSeconds(elapsedSecs);
 
+      // Check Riddle Recharge Countdown
+      const elapsedSinceListen = Math.floor((now - lastRiddleListenTime) / 1000);
+      const rechargeRemaining = Math.max(0, RIDDLE_COOLDOWN_SECONDS - elapsedSinceListen);
+      setCooldownRemainingSeconds(rechargeRemaining);
+
+      // Hint schedule progression check (Section 3)
       if (elapsedSecs >= 10 * 60 && !unlockedHints.includes('hint1')) {
         unlockHintTier('hint1');
       }
@@ -175,7 +225,7 @@ export const App: React.FC = () => {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [puzzleStartTime, unlockedHints, unlockHintTier]);
+  }, [puzzleStartTime, unlockedHints, unlockHintTier, lastRiddleListenTime]);
 
   // Manual Dev / Kid "Unlock Next Hint Now" Helper
   const handleUnlockNextHint = () => {
@@ -185,6 +235,12 @@ export const App: React.FC = () => {
       setPuzzleStartTime(Date.now() - targetSecs * 1000);
       unlockHintTier(nextLocked.id, true);
     }
+  };
+
+  const formatRechargeCountdown = (secs: number) => {
+    const m = Math.floor(secs / 60);
+    const s = secs % 60;
+    return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
   };
 
   // Tablet Core Tap-to-Place / Remove logic
@@ -221,6 +277,7 @@ export const App: React.FC = () => {
     setSelectedBlockId(null);
     setCurrentMockQuote(null);
     setElapsedSeconds(0);
+    setLastRiddleListenTime(0);
     soundEngine.cancelSpeech();
   };
 
@@ -255,6 +312,8 @@ export const App: React.FC = () => {
       soundEngine.speakVillagerMock(randomMock, isAudioMuted);
     }
   };
+
+  const isOnCooldown = cooldownRemainingSeconds > 0;
 
   return (
     <div className="min-h-screen flex flex-col justify-between bg-mc-dark p-3 sm:p-6 pb-12">
@@ -293,7 +352,7 @@ export const App: React.FC = () => {
             </div>
           </div>
 
-          {/* Primary Top Action Bar: HOW TO PLAY & LISTEN TO RIDDLE */}
+          {/* Primary Top Action Bar: HOW TO PLAY & LISTEN TO RIDDLE (5-Min Cooldown) */}
           <div className="flex flex-wrap items-center gap-2.5">
             <button
               onClick={() => setIsInstructionsOpen(true)}
@@ -306,11 +365,23 @@ export const App: React.FC = () => {
 
             <button
               onClick={handleListenToRiddle}
-              className="bg-mc-gold hover:bg-white text-black border-2 border-mc-stoneDark px-4 py-2.5 rounded text-xs font-minecraft transition-all font-bold flex items-center gap-2 shadow-mc-button hover:scale-105 active:scale-95"
-              title="Speak Riddle & Unlocked Hints Aloud"
+              className={`border-2 px-4 py-2.5 rounded text-xs font-minecraft transition-all font-bold flex items-center gap-2 shadow-mc-button ${
+                isOnCooldown
+                  ? 'bg-mc-stoneDark border-mc-panel text-white/70 hover:border-mc-redstone'
+                  : 'bg-mc-gold hover:bg-white text-black border-mc-stoneDark hover:scale-105 active:scale-95'
+              }`}
+              title={
+                isOnCooldown
+                  ? `Riddle recharging! Ready in ${formatRechargeCountdown(cooldownRemainingSeconds)}`
+                  : 'Speak Riddle & Unlocked Hints Aloud (5-Minute Recharging Cooldown)'
+              }
             >
-              <span>🔊</span>
-              <span>LISTEN TO RIDDLE</span>
+              <span>{isOnCooldown ? '⏳' : '🔊'}</span>
+              <span>
+                {isOnCooldown
+                  ? `RECHARGING (${formatRechargeCountdown(cooldownRemainingSeconds)})`
+                  : 'LISTEN TO RIDDLE'}
+              </span>
             </button>
 
             <button
@@ -331,7 +402,7 @@ export const App: React.FC = () => {
             <button
               onClick={handleResetPuzzle}
               className="bg-mc-stone border-2 border-mc-panel hover:border-mc-redstone hover:bg-mc-redstone/20 text-white px-3 py-2.5 rounded text-xs font-minecraft transition-all font-bold"
-              title="Reset Puzzle Progress"
+              title="Reset Puzzle Progress & Cooldowns"
             >
               🔄 Reset
             </button>
