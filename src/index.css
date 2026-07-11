@@ -1,0 +1,48 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer utilities {
+  /* Prevent default mobile touch callouts for seamless tablet play */
+  .no-select {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+}
+
+/* Custom scrollbar styling for retro feel */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #262626;
+  border: 2px solid #373737;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #8F8F8F;
+  border: 2px solid #C6C6C6;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #C6C6C6;
+}
+
+/* Keyframe glow for selected inventory slot */
+@keyframes gold-pulse {
+  0%, 100% {
+    box-shadow: 0 0 10px 3px rgba(255, 215, 0, 0.8), inset 0 0 6px rgba(255, 215, 0, 0.6);
+    border-color: #FFD700;
+  }
+  50% {
+    box-shadow: 0 0 20px 6px rgba(255, 215, 0, 1), inset 0 0 12px rgba(255, 215, 0, 0.9);
+    border-color: #FFF8E7;
+  }
+}
+
+.selected-slot-glow {
+  animation: gold-pulse 1.2s infinite ease-in-out;
+}
