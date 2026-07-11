@@ -2,7 +2,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import confetti from 'canvas-confetti';
 import { CraftingGrid } from './components/CraftingGrid';
 import { InventoryHotbar } from './components/InventoryHotbar';
-import { RiddleConsole } from './components/RiddleConsole';
+import { AudioRiddleBar } from './components/AudioRiddleBar';
+import { InstructionsModal } from './components/InstructionsModal';
 import { VillagerChatBubble } from './components/VillagerChatBubble';
 import { CelebrationModal } from './components/CelebrationModal';
 import { WINNING_RECIPE, HINT_TIERS, MOCK_QUOTES } from './data/riddle';
@@ -86,14 +87,15 @@ export const App: React.FC = () => {
   const [puzzleIsSolved, setPuzzleIsSolved] = useState<boolean>(getInitialSolvedState);
   const [isAudioMuted, setIsAudioMuted] = useState<boolean>(getInitialMutedState);
 
-  // Transient State
+  // Transient UI State
   const [selectedBlockId, setSelectedBlockId] = useState<BlockId | null>(null);
+  const [isInstructionsOpen, setIsInstructionsOpen] = useState<boolean>(false);
   const [elapsedSeconds, setElapsedSeconds] = useState<number>(() =>
     Math.floor((Date.now() - getInitialStartTime()) / 1000)
   );
   const [currentMockQuote, setCurrentMockQuote] = useState<string | null>(null);
 
-  // Sync state changes to localStorage (Section 5)
+  // Sync state changes to localStorage
   useEffect(() => {
     localStorage.setItem(STORAGE_KEYS.GRID_STATE, JSON.stringify(craftingGrid));
   }, [craftingGrid]);
@@ -117,13 +119,23 @@ export const App: React.FC = () => {
     }
   }, [isAudioMuted]);
 
-  // Read a hint or text aloud
-  const readRiddleAloud = useCallback(
+  // Speak a hint or riddle aloud via SpeechSynthesis
+  const speakTextAloud = useCallback(
     (text: string) => {
       soundEngine.speakText(text, isAudioMuted);
     },
     [isAudioMuted]
   );
+
+  // Play full audio riddle + any unlocked hints sequentially
+  const handleListenToRiddle = useCallback(() => {
+    const unlockedTexts = HINT_TIERS.filter((tier) =>
+      unlockedHints.includes(tier.id)
+    ).map((t) => `${t.title}. ${t.text}`);
+
+    const combinedSpeech = unlockedTexts.join(' ... Next audio clue: ');
+    soundEngine.speakText(combinedSpeech, isAudioMuted);
+  }, [unlockedHints, isAudioMuted]);
 
   // Helper to unlock a specific hint tier
   const unlockHintTier = useCallback(
@@ -135,16 +147,16 @@ export const App: React.FC = () => {
           soundEngine.playChime(isAudioMuted);
           const tier = HINT_TIERS.find((t) => t.id === tierId);
           if (tier) {
-            readRiddleAloud(`${tier.title} unlocked: ${tier.text}`);
+            speakTextAloud(`${tier.title} unlocked! ${tier.text}`);
           }
         }
         return next;
       });
     },
-    [isAudioMuted, readRiddleAloud]
+    [isAudioMuted, speakTextAloud]
   );
 
-  // Riddle Loop & Timer Monitor (Every 1 second update elapsed time & auto-unlock hints)
+  // Riddle Loop & Timer Monitor (Auto-unlock at 10m, 20m, 60m)
   useEffect(() => {
     const timer = setInterval(() => {
       const now = Date.now();
@@ -246,18 +258,26 @@ export const App: React.FC = () => {
 
   return (
     <div className="min-h-screen flex flex-col justify-between bg-mc-dark p-3 sm:p-6 pb-12">
+      {/* Celebration Overlay Modal (Secret Letter Q Reveal) */}
       <CelebrationModal
         isOpen={puzzleIsSolved}
         onReset={handleResetPuzzle}
       />
 
+      {/* Instructions Popup Modal */}
+      <InstructionsModal
+        isOpen={isInstructionsOpen}
+        onClose={() => setIsInstructionsOpen(false)}
+      />
+
+      {/* Villager Chat Mock Bubble */}
       <VillagerChatBubble
         mockQuote={currentMockQuote}
         onDismiss={() => setCurrentMockQuote(null)}
       />
 
-      <div className="max-w-6xl mx-auto w-full space-y-5">
-        {/* Header Bar */}
+      <div className="max-w-5xl mx-auto w-full space-y-5">
+        {/* Top Header & Main Audio/Help Controls */}
         <header className="bg-mc-stoneDark border-4 border-mc-stone p-4 sm:p-5 rounded-lg shadow-mc-inset flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-3.5">
             <div className="w-12 h-12 sm:w-14 sm:h-14 bg-mc-dirtDark border-2 border-mc-gold rounded flex items-center justify-center text-2xl sm:text-3xl shadow">
@@ -273,10 +293,29 @@ export const App: React.FC = () => {
             </div>
           </div>
 
-          <div className="flex items-center gap-2.5">
+          {/* Primary Top Action Bar: HOW TO PLAY & LISTEN TO RIDDLE */}
+          <div className="flex flex-wrap items-center gap-2.5">
+            <button
+              onClick={() => setIsInstructionsOpen(true)}
+              className="bg-mc-stone border-2 border-mc-panel hover:border-mc-gold hover:bg-mc-panelDark text-white px-4 py-2.5 rounded text-xs font-minecraft transition-all font-bold flex items-center gap-2 shadow"
+              title="How to Play Instructions"
+            >
+              <span>📖</span>
+              <span>INSTRUCTIONS</span>
+            </button>
+
+            <button
+              onClick={handleListenToRiddle}
+              className="bg-mc-gold hover:bg-white text-black border-2 border-mc-stoneDark px-4 py-2.5 rounded text-xs font-minecraft transition-all font-bold flex items-center gap-2 shadow-mc-button hover:scale-105 active:scale-95"
+              title="Speak Riddle & Unlocked Hints Aloud"
+            >
+              <span>🔊</span>
+              <span>LISTEN TO RIDDLE</span>
+            </button>
+
             <button
               onClick={() => setIsAudioMuted(!isAudioMuted)}
-              className={`px-3.5 py-2.5 rounded text-xs border-2 flex items-center gap-1.5 font-minecraft transition-all font-bold ${
+              className={`px-3 py-2.5 rounded text-xs border-2 flex items-center gap-1.5 font-minecraft transition-all font-bold ${
                 isAudioMuted
                   ? 'bg-mc-redstone border-white text-white'
                   : 'bg-mc-stone border-mc-panel hover:border-mc-gold text-white'
@@ -291,7 +330,7 @@ export const App: React.FC = () => {
 
             <button
               onClick={handleResetPuzzle}
-              className="bg-mc-stone border-2 border-mc-panel hover:border-mc-redstone hover:bg-mc-redstone/20 text-white px-3.5 py-2.5 rounded text-xs font-minecraft transition-all font-bold"
+              className="bg-mc-stone border-2 border-mc-panel hover:border-mc-redstone hover:bg-mc-redstone/20 text-white px-3 py-2.5 rounded text-xs font-minecraft transition-all font-bold"
               title="Reset Puzzle Progress"
             >
               🔄 Reset
@@ -299,18 +338,18 @@ export const App: React.FC = () => {
           </div>
         </header>
 
-        {/* Section 2 & 3: Riddle & Hint Progression Engine */}
-        <RiddleConsole
+        {/* Audio Riddle & Countdown Status Bar */}
+        <AudioRiddleBar
           unlockedHints={unlockedHints}
           elapsedSeconds={elapsedSeconds}
+          onPlayAudio={(text) => speakTextAloud(text)}
           onUnlockNextHint={handleUnlockNextHint}
-          onSpeakRiddle={readRiddleAloud}
         />
 
-        {/* Main Crafting Workspace Grid + Inventory */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
-          {/* Crafting Grid Area */}
-          <div className="lg:col-span-7 w-full">
+        {/* --- FRONT AND CENTER: THE 3x3 CRAFTING WORKSPACE --- */}
+        <div className="space-y-5">
+          {/* Big 3x3 Crafting Table Centerpiece */}
+          <div className="w-full">
             <CraftingGrid
               gridState={craftingGrid}
               selectedBlockId={selectedBlockId}
@@ -318,52 +357,39 @@ export const App: React.FC = () => {
               onSlotDrop={handleSlotDrop}
             />
 
-            {/* Action Buttons (Tablet Big Touch Targets) */}
-            <div className="mt-4 flex flex-col sm:flex-row items-center justify-between gap-3 bg-mc-stoneDark p-3.5 rounded border-4 border-mc-stone">
+            {/* Core Action Buttons Directly Below Table */}
+            <div className="mt-4 flex flex-col sm:flex-row items-center justify-between gap-3 bg-mc-stoneDark p-4 rounded-lg border-4 border-mc-stone">
               <button
                 onClick={handleClearTable}
-                className="w-full sm:w-auto bg-mc-stone hover:bg-mc-panelDark text-white border-2 border-mc-panel px-5 py-3.5 rounded text-xs font-minecraft transition-all font-bold"
+                className="w-full sm:w-auto bg-mc-stone hover:bg-mc-panelDark text-white border-2 border-mc-panel px-6 py-4 rounded text-xs font-minecraft transition-all font-bold"
               >
                 🧹 CLEAR TABLE
               </button>
 
               <button
                 onClick={handleSubmitRecipe}
-                className="w-full sm:w-auto bg-mc-gold hover:bg-white text-black font-bold border-4 border-mc-stoneDark px-8 py-4 rounded text-sm font-minecraft shadow-mc-button hover:scale-105 active:scale-95 transition-all"
+                className="w-full sm:w-auto bg-mc-gold hover:bg-white text-black font-bold border-4 border-mc-stoneDark px-10 py-4 rounded text-sm font-minecraft shadow-mc-button hover:scale-105 active:scale-95 transition-all"
               >
                 ⚡ CRAFT RECIPE!
               </button>
             </div>
           </div>
 
-          {/* Block Inventory Hotbar */}
-          <div className="lg:col-span-5 w-full">
+          {/* Block Inventory Hotbar Directly Below */}
+          <div className="w-full">
             <InventoryHotbar
               selectedBlockId={selectedBlockId}
               onSelectBlock={(blockId) =>
                 setSelectedBlockId((prev) => (prev === blockId ? null : blockId))
               }
             />
-
-            {/* Kid & Tablet Friendly Interaction Tips */}
-            <div className="mt-3.5 bg-mc-stone/70 border-2 border-mc-stoneDark p-3.5 rounded text-xs text-mc-panel space-y-2">
-              <div className="text-mc-gold uppercase font-bold text-xs font-minecraft">
-                💡 Tablet Touch Tips (For 10-Year-Old Fingers):
-              </div>
-              <div className="font-minecraft text-[11px] leading-relaxed">
-                • Tap any block below to select it (yellow outline).<br />
-                • Tap any slot on the 3x3 table to place it.<br />
-                • Tap a slot without a selected item to clear that block.<br />
-                • Press &apos;Craft Recipe!&apos; when your grid matches Barnaby&apos;s story!
-              </div>
-            </div>
           </div>
         </div>
       </div>
 
       {/* Footer Info */}
-      <footer className="max-w-6xl mx-auto w-full mt-6 text-center text-[10px] text-mc-panel/60 font-mono">
-        The Phantom-Slayer Snooze Button • Happy Birthday! • Containerized &amp; Ready for Google Cloud Run
+      <footer className="max-w-5xl mx-auto w-full mt-8 text-center text-[10px] text-mc-panel/60 font-mono">
+        The Phantom-Slayer Snooze Button • Birthday Treasure Puzzle 1 of 4 (Letter Q) • Containerized for Google Cloud Run
       </footer>
     </div>
   );
