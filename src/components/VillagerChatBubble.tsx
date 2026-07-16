@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 
 interface VillagerChatBubbleProps {
   mockQuote: string | null;
@@ -9,6 +9,14 @@ export const VillagerChatBubble: React.FC<VillagerChatBubbleProps> = ({
   mockQuote,
   onDismiss,
 }) => {
+  useEffect(() => {
+    if (!mockQuote) return;
+    const timer = setTimeout(() => {
+      onDismiss();
+    }, 10000); // Auto-close exactly 10 seconds after insulting the user
+    return () => clearTimeout(timer);
+  }, [mockQuote, onDismiss]);
+
   if (!mockQuote) return null;
 
   return (

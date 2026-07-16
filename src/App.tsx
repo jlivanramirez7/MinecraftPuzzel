@@ -225,15 +225,6 @@ export const App: React.FC = () => {
     return () => clearInterval(timer);
   }, [puzzleStartTime, unlockedHints, unlockHintTier, lastRiddleListenTime]);
 
-  const handleUnlockNextHint = () => {
-    const nextLocked = HINT_TIERS.find((t) => !unlockedHints.includes(t.id));
-    if (nextLocked) {
-      const targetSecs = nextLocked.unlockMinutes * 60;
-      setPuzzleStartTime(Date.now() - targetSecs * 1000);
-      unlockHintTier(nextLocked.id, true);
-    }
-  };
-
   const formatRechargeCountdown = (secs: number) => {
     const m = Math.floor(secs / 60);
     const s = secs % 60;
@@ -418,7 +409,9 @@ export const App: React.FC = () => {
           unlockedHints={unlockedHints}
           elapsedSeconds={elapsedSeconds}
           onPlayAudio={(text) => speakTextAloud(text)}
-          onUnlockNextHint={handleUnlockNextHint}
+          onListenToRiddle={handleListenToRiddle}
+          isOnCooldown={isOnCooldown}
+          cooldownRemainingSeconds={cooldownRemainingSeconds}
         />
 
         {/* --- FRONT AND CENTER SIDE-BY-SIDE LAYOUT (LEFT: 9 BLOCKS, RIGHT: 3x3 TABLE) --- */}
